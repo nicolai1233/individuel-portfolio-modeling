@@ -1,0 +1,124 @@
+grammar org.xtext.example.SQLProjectLanguage with org.eclipse.xtext.common.Terminals
+
+generate sQLProjectLanguage "http://www.xtext.org/example/SQLProjectLanguage"
+
+SQLSystem:
+	'system' name=ID 'url' value=STRING operation+=Operations*
+	;
+	
+Operations:
+	Add|Remove|Select|Relationship
+;
+
+Relationship:
+	'relation' name= ID 'from' foreignkey+=ForeignKey*
+;
+
+Select:
+	'select' name = ID table=Table  attributes+=Attribute* 
+;
+
+Table:
+	'table' table=[Add]
+;
+
+Remove:
+	'remove' name = ID table=Table attributes +=Attribute* 
+;
+
+ForeignKey:
+	'foreign' 'key' name=ID ':'type=('String'|'int') 'reference'overType=[Add] //'.' att= [Attribute]
+;
+
+Add:
+	'add' name = ID (primeryKey = PrimaryKey)? attributes+=Attribute* 
+;
+
+PrimaryKey://PRIMARY KEY
+	'primary' 'key' name=ID ':' type=('String'|'int') ('requireInt' requirement= [PrimaryKey] requirement1= LogicalEXP mathAndOr += PrimLogicalExpAndOr*
+		|'requireStr' strRequirement=[PrimaryKey] stringOP=StringOP str=STRING primString+= PrimStringAndOr*
+	)?
+;
+
+
+Attribute:
+   	'attribute' name=ID  ':' type=('String'|'int') ('requireInt' requirement= [Attribute] requirement1= LogicalEXP mathAndOr += AttLogicalExpAndOr* 
+   		| 'requireStr' strRequirmentAtt=[Attribute] stringOP=StringOP str=STRING attString+= AttStringAndOr*
+   	)?
+   	
+;
+
+AttLogicalExpAndOr:
+	andOr=AndOr att=[Attribute] math=LogicalEXP	
+;
+
+PrimLogicalExpAndOr:
+	andOr=AndOr att=[PrimaryKey] math=LogicalEXP
+;
+
+LogicalEXP:
+	op=RelationalOp right=MathExp
+;
+
+PrimStringAndOr:
+	andOr=AndOr  prim =[PrimaryKey]  strOP=StringOP Str=STRING
+;
+
+AttStringAndOr:
+	andOr=AndOr att=[Attribute] strOp= StringOP Str = STRING
+;
+
+
+AndOr:
+	type=("and"|"or")
+;
+
+
+RelationalOp:
+	type=('=' |  '<' |  '>' |  '<=' |  '>=')
+;
+
+StringOP:
+	type=('=='|"!=")
+;
+
+MathExp:
+	exp=Exp
+;
+	
+Exp returns Expresion:
+	exp1=ExpMin ( '+' {Plus.exp1=current} exp2=ExpMin)*
+	;
+
+ExpMin returns Expresion:
+	exp1=ExpMult ('-'{Minus.exp1=current} exp2 = ExpMult)*
+;
+
+
+ExpMult returns Expresion: // Precedence: '*' is stronger than '+ or -'
+	exp1=ExpDiv ('*' {Mult.exp1=current} exp2=ExpDiv)*
+;
+
+ExpDiv returns Expresion: // Precedence: '/' is stronger than '+ or -'
+	exp1=TextPrim ('/' {Div.exp1=current} exp2=TextPrim)*
+;
+
+TextPrim returns Expresion: 
+	Numbers | Parenthesis
+;
+
+Numbers:	
+	value=INT
+;
+
+Parenthesis:	
+  '(' exp=Exp ')'	
+;
+
+TextString:
+	str=STRING
+;
+
+
+
+	

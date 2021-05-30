@@ -1,0 +1,24 @@
+system University url "jdbc:postgresql://hattie.db.elephantsql.com:5432/hsbalsct"
+	add Person
+	  primary key email: String  
+      attribute age: int requireInt age > 18 and age < (18*2)    
+      attribute name : String 
+      attribute type : String requireStr type == "Student" or type == "Teacher"                 
+    add Course            
+      primary key CourseID: int
+      attribute CourseName: String
+      attribute teacherName: String
+   relation Peco from   
+   		foreign key email:String reference Person  
+   		foreign key courseID:int reference Course    
+   remove Person  
+   		table Person          
+        attribute email: String                     
+   remove Student     
+   		table Person     
+        attribute type: String requireStr type == "Student"  
+   select Student  
+   		table Person    
+        attribute type: String requireStr type == "Student"      
+ 
+     
